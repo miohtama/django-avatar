@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
+from django.core.urlresolvers import reverse
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -86,7 +87,11 @@ def add(request, extra_context=None, next_override=None,
             avatar.save()
             messages.success(request, _("Successfully uploaded a new avatar."))
             avatar_updated.send(sender=Avatar, user=request.user, avatar=avatar)
-            return HttpResponseRedirect(next_override or _get_next(request))
+
+            return HttpResponseRedirect(reverse("avatar_change"))
+
+            # return HttpResponseRedirect(next_override or _get_next(request))
+
     return render_to_response(
             'avatar/add.html',
             extra_context,
@@ -113,6 +118,7 @@ def change(request, extra_context=None, next_override=None,
     upload_avatar_form = upload_form(user=request.user, **kwargs)
     primary_avatar_form = primary_form(request.POST or None,
         user=request.user, avatars=avatars, **kwargs)
+
     if request.method == "POST":
         updated = False
         if 'choice' in request.POST and primary_avatar_form.is_valid():
